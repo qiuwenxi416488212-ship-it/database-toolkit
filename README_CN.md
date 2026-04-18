@@ -1,244 +1,241 @@
-# Excel Parser - Excel 操作工具箱
+# Data Visualization - 数据可视化工具箱
 
 <p align="center">
-  <img src="https://img.shields.io/pypi/v/excel-parser-toolkit?style=flat-square" alt="PyPI">
-  <img src="https://img.shields.io/pypi/l/excel-parser-toolkit?style=flat-square" alt="License">
+  <img src="https://img.shields.io/pypi/v/chart-generator-toolkit?style=flat-square" alt="PyPI">
+  <img src="https://img.shields.io/pypi/l/chart-generator-toolkit?style=flat-square" alt="License">
 </p>
 
 ## 📖 简介
 
-**Excel Parser** 是专业的 Microsoft Excel 工作簿操作工具，帮助你轻松创建、读取、编辑 Excel 文件。
+**Data Visualization** 是简洁强大的数据可视化工具,帮助快速生成各类统计图表。
 
 ### 🎯 适用场景
 
-- 📊 数据分析报告生成
-- 📋 批量数据导入导出
-- 📑 多Sheet管理工作簿
-- 🎨 格式化报表
-- 📝 模板文件创建
+- 📊 数据分析报告
+- 📈 业务Dashboard
+- 📉 趋势分析
+- 🥧 占比分析
+- 🔍 相关性分析
 
 ## 🚀 功能特性
 
 | 功能 | 说明 |
 |------|------|
-| 📖 **完整读写** | 读取/写入单元格、区域、整个工作簿 |
-| 📑 **Sheet管理** | 创建、删除、选择Sheet |
-| 🎨 **样式设置** | 字体、颜色、对齐、边框 |
-| 📐 **公式支持** | 读取和写入公式 |
-| 🔄 **格式转换** | XLSX↔CSV、XLSX→JSON |
-| 📦 **批量操作** | 合并文件、拆分文件 |
-| 🎯 **模板创建** | 快速生成标准模板 |
+| 📈 **折线图** | 趋势变化 |
+| 📊 **柱状图** | 类别对比 |
+| 🥧 **饼图** | 占比分布 |
+| ⚪ **散点图** | 相关性 |
+| 🎨 **样式定制** | 颜色/标签/图例 |
+| 💾 **多格式导出** | PNG/SVG/HTML |
 
 ## 📦 安装
 
 ```bash
-pip install openpyxl pandas
+# 基础
+pip install matplotlib pandas
+
+# 交互式图表 (可选)
+pip install plotly
 ```
 
 ## 🎬 快速开始
 
-### 读取Excel
-
 ```python
-from excel_parser import ExcelParser, read_excel
+from chart_generator import ChartGenerator, quick_chart
 
-# 方法1: 使用类
-parser = ExcelParser('data.xlsx')
-df = parser.to_dataframe()
-print(f"读取 {len(df)} 行")
-parser.close()
+# 准备数据
+data = {
+    '月份': ['1月', '2月', '3月', '4月'],
+    '销售额': [10000, 15000, 12000, 18000],
+    '利润': [2000, 3500, 2800, 4200]
+}
 
-# 方法2: 便捷函数
-df = read_excel('data.xlsx')
-```
+# 方式1: 快速生成
+chart = quick_chart(data, 'line', '月份', '销售额')
+chart.save('chart.png')
 
-### 写入Excel
-
-```python
-from excel_parser import ExcelParser
-
-parser = ExcelParser('output.xlsx')
-
-# 创建Sheet
-parser.create_sheet('销售数据')
-
-# 写入表头
-parser.write_row(1, ['日期', '销售额', '利润', '备注'])
-
-# 追加数据
-parser.append_row(['2026-01', 10000, 2000, '开门红'])
-parser.append_row(['2026-02', 15000, 3500, '增长'])
-parser.append_row(['2026-03', 12000, 1800, '平稳'])
-
-# 保存
-parser.save()
-parser.close()
-
-print("写入完成!")
-```
-
-### XLSX 转 CSV
-
-```python
-from excel_parser import excel_to_csv
-
-excel_to_csv('中文数据.xlsx', '中文数据.csv')
+# 方式2: 完整API
+chart = ChartGenerator()
+chart.line_chart(data, '月份', ['销售额', '利润'], title='月度业绩')
+chart.save('sales.png')
 ```
 
 ## 📚 详细示例
 
-### 创建带样式的报表
+### 折线图 - 趋势分析
 
 ```python
-from excel_parser import ExcelParser
-from openpyxl.styles import Font, PatternFill, Alignment
+from chart_generator import ChartGenerator
 
-parser = ExcelParser('report.xlsx')
-parser.create_sheet('月度报告')
+data = {
+    'date': ['2026-01', '2026-02', '2026-03', '2026-04'],
+    'sales': [1000, 1500, 1300, 1800],
+    'profit': [200, 350, 250, 400]
+}
 
-# 写入标题
-parser.write_cell('A1', '2026年销售报告')
-parser.set_style('A1', font=Font(size=16, bold=True))
-
-# 写入表头
-headers = ['日期', '产品', '销量', '销售额']
-parser.write_row(3, headers)
-parser.set_style('A3:D3', 
-    font=Font(bold=True),
-    fill=PatternFill(start_color='CCE5FF', fill_type='solid')
+chart = ChartGenerator()
+chart.line_chart(
+    data, 
+    x='date', 
+    y=['sales', 'profit'],  # 多条线
+    title='2026年销售趋势',
+    xlabel='月份',
+    ylabel='金额(元)'
 )
-
-# 写入数据
-data = [
-    ['2026-01-01', '产品A', 100, 5000],
-    ['2026-01-02', '产品B', 80, 4000],
-]
-parser.write_range('A4', data)
-
-# 自动筛选
-parser.autofilter('A3:D100')
-
-parser.save()
-parser.close()
+chart.save('trend.png')
 ```
 
-### 批量合并Excel文件
+### 柱状图 - 类别对比
 
 ```python
-from excel_parser import ExcelParser
+data = {
+    'product': ['产品A', '产品B', '产品C', '产品D'],
+    'sales': [1500, 2300, 1800, 2100],
+    'target': [2000, 2000, 2000, 2000]
+}
 
-# 合并多个Excel文件
-ExcelParser.merge_files(
-    file_paths=['a.xlsx', 'b.xlsx', 'c.xlsx'],
-    output_path='merged.xlsx'
+chart = ChartGenerator()
+chart.bar_chart(
+    data,
+    x='product',
+    y=['sales', 'target'],  # 对比
+    title='产品销售 vs 目标'
 )
-
-print("合并完成!")
+chart.save('bar.png')
 ```
 
-### 按列拆分Excel
+### 饼图 - 占比分析
 
 ```python
-# 按"部门"列拆分
-ExcelParser.split_by_column(
-    input_path='员工列表.xlsx',
-    output_dir='部门拆分',
-    column='部门'
-)
+data = {
+    'category': ['手机', '电脑', '平板', '配件'],
+    'revenue': [35, 30, 20, 15]  # 百分比
+}
 
-# 生成: 财务部.xlsx, 技术部.xlsx, 销售部.xlsx ...
+chart = ChartGenerator()
+chart.pie_chart(
+    data,
+    names='category',
+    values='revenue',
+    title='收入占比'
+)
+chart.save('pie.png')
 ```
 
-### 创建模板
+### 散点图 - 相关性分析
 
 ```python
-from excel_parser import ExcelParser
+data = {
+    'advertising': [100, 200, 300, 400, 500],
+    'sales': [1200, 1800, 2400, 2900, 3800],
+    'profit': [300, 500, 700, 800, 1100]
+}
 
-ExcelParser.create_template(
-    path='报销单模板.xlsx',
-    sheets={
-        '费用报销': ['日期', '部门', '姓名', '金额', '事项'],
-        '差旅报销': ['出发日期', '返回日期', '地点', '交通费', '住宿费']
-    }
+chart = ChartGenerator()
+chart.scatter_chart(
+    data,
+    x='advertising',
+    y='sales',
+    size='profit',  # 气泡大小
+    title='广告投入 vs 销售额'
 )
+chart.save('scatter.png')
+```
+
+### Plotly 交互式图表
+
+```python
+import pandas as pd
+from chart_generator import PlotlyChart
+
+df = pd.DataFrame(data)
+
+# 交互式折线图
+fig = PlotlyChart.line(df, 'date', 'sales', title='交互式折线图')
+html = PlotlyChart.to_html(fig)
+
+# 保存为HTML
+PlotlyChart.save(fig, 'interactive.html')
+
+# 保存为PNG
+PlotlyChart.save(fig, 'chart.png', format='png')
 ```
 
 ## 📋 API 参考
 
-### 文件操作
+### ChartGenerator (静态图表)
 
 ```python
-parser = ExcelParser('file.xlsx')
-parser.load('another.xlsx')     # 加载
-parser.save()                   # 保存
-parser.save('new.xlsx')         # 另存为
-parser.close()                  # 关闭
+chart = ChartGenerator()
+
+# 图表类型
+chart.line_chart(data, x, y)        # 折线图
+chart.bar_chart(data, x, y)         # 柱状图
+chart.pie_chart(data, names, values) # 饼图
+chart.scatter_chart(data, x, y)     # 散点图
+
+# 保存
+chart.save('output.png', dpi=300)
+chart.to_base64()  # Base64编码
 ```
 
-### Sheet操作
+### PlotlyChart (交互式)
 
 ```python
-sheets = parser.get_sheets()    # 获取所有Sheet
-parser.select_sheet('Sheet1')   # 选择Sheet
-parser.create_sheet('NewSheet') # 创建Sheet
-parser.delete_sheet('Sheet2')   # 删除Sheet
+# 创建
+fig = PlotlyChart.line(df, x, y)
+fig = PlotlyChart.bar(df, x, y)
+fig = PlotlyChart.scatter(df, x, y, color=category)
+fig = PlotlyChart.pie(df, names, values)
+
+# 导出
+html = PlotlyChart.to_html(fig)
+PlotlyChart.save(fig, 'output.html')
+PlotlyChart.save(fig, 'output.png')
 ```
 
-### 数据读写
+## 🎨 样式选项
 
 ```python
-# 读取
-value = parser.read_cell('A1')
-data = parser.read_range('A1:C10')
-all_data = parser.read_all()
-df = parser.to_dataframe()
-
-# 写入
-parser.write_cell('A1', '值')
-parser.write_row(1, [1,2,3])
-parser.write_range('A1', [[1,2],[3,4]])
-parser.append_row([1,2,3])
+chart.line_chart(
+    data, 'x', 'y',
+    title='标题',
+    xlabel='X轴标签',
+    ylabel='Y轴标签',
+    figsize=(12, 6),  # 图形大小
+    color='#FF5733'   # 颜色
+)
 ```
 
-### 样式
+## 📊 图表选择指南
 
-```python
-parser.set_style('A1', font=Font(bold=True))
-parser.set_column_width(1, 20)  # 列宽
-parser.autofilter('A1:D10')     # 筛选
-```
+| 数据类型 | 推荐图表 |
+|----------|----------|
+| 随时间变化 | 折线图 |
+| 类别比较 | 柱状图 |
+| 部分占比 | 饼图 |
+| 两变量关系 | 散点图 |
+| 多维数据 | 气泡图 |
 
 ## 🔧 常见问题
 
-### Q: 如何设置列宽?
+### 中文显示乱码?
 ```python
-parser.set_column_width(1, 20)  # A列宽20
-parser.set_column_width(2, 15) # B列宽15
+# 设置中文字体
+from chart_generator import setup_chinese_font
+setup_chinese_font()
 ```
 
-### Q: 如何设置日期格式?
+### 如何调整图形大小?
 ```python
-# 使用pandas写入时自动处理
-df['date'] = pd.to_datetime(df['date'])
-df.to_excel('output.xlsx')
+chart.line_chart(data, x, y, figsize=(14, 8))
 ```
 
-### Q: 如何读取公式而非值?
+### 如何只显示部分数据?
 ```python
-parser = ExcelParser('file.xlsx')
-formula = parser.get_formula('A1')  # 获取公式
+# 筛选数据
+data = {k: v[:10] for k, v in data.items()}
 ```
-
-## 📊 性能
-
-| 操作 | 10行 | 1万行 | 10万行 |
-|------|------|-------|--------|
-| 读取 | 0.1s | 0.5s | 3s |
-| 写入 | 0.1s | 0.8s | 8s |
-
-## 🤝 贡献
-
-欢迎提交 Issue 和 Pull Request！
 
 ## 📄 许可证
 
