@@ -1,241 +1,253 @@
-# Data Visualization - 数据可视化工具箱
+# Database Ops - 数据库操作工具箱
 
 <p align="center">
-  <img src="https://img.shields.io/pypi/v/chart-generator-toolkit?style=flat-square" alt="PyPI">
-  <img src="https://img.shields.io/pypi/l/chart-generator-toolkit?style=flat-square" alt="License">
+  <img src="https://img.shields.io/pypi/v/database-ops-toolkit?style=flat-square" alt="PyPI">
+  <img src="https://img.shields.io/pypi/l/database-ops-toolkit?style=flat-square" alt="License">
 </p>
 
 ## 📖 简介
 
-**Data Visualization** 是简洁强大的数据可视化工具,帮助快速生成各类统计图表。
+**Database Ops** 是强大的 SQLite/MySQL 数据库操作工具,让数据库操作变得简单高效。
 
 ### 🎯 适用场景
 
-- 📊 数据分析报告
-- 📈 业务Dashboard
-- 📉 趋势分析
-- 🥧 占比分析
-- 🔍 相关性分析
+- 📊 数据存储和查询
+- 🔧 快速原型开发
+- 💾 数据备份和迁移
+- 📈 统计分析
+- 🔄 数据同步
 
 ## 🚀 功能特性
 
 | 功能 | 说明 |
 |------|------|
-| 📈 **折线图** | 趋势变化 |
-| 📊 **柱状图** | 类别对比 |
-| 🥧 **饼图** | 占比分布 |
-| ⚪ **散点图** | 相关性 |
-| 🎨 **样式定制** | 颜色/标签/图例 |
-| 💾 **多格式导出** | PNG/SVG/HTML |
+| 🗄️ **多数据库支持** | SQLite / MySQL |
+| 📝 **完整SQL支持** | 查询/插入/更新/删除 |
+| 🔄 **事务支持** | 提交/回滚 |
+| 💾 **备份恢复** | 数据库备份 |
+| 📤 **数据导入导出** | JSON/CSV |
+| ⚡ **批量操作** | 批量插入 |
+| 🔍 **智能查询** | 参数化查询防注入 |
 
 ## 📦 安装
 
 ```bash
-# 基础
-pip install matplotlib pandas
+# 基础 (SQLite)
+pip install pandas
 
-# 交互式图表 (可选)
-pip install plotly
+# 完整 (SQLite + MySQL)
+pip install pandas pymysql
 ```
 
 ## 🎬 快速开始
 
+### SQLite 使用
+
 ```python
-from chart_generator import ChartGenerator, quick_chart
+from database_ops import DatabaseOps
 
-# 准备数据
-data = {
-    '月份': ['1月', '2月', '3月', '4月'],
-    '销售额': [10000, 15000, 12000, 18000],
-    '利润': [2000, 3500, 2800, 4200]
-}
+# 连接数据库 (自动创建)
+db = DatabaseOps('myapp.db')
 
-# 方式1: 快速生成
-chart = quick_chart(data, 'line', '月份', '销售额')
-chart.save('chart.png')
+# 创建表
+db.execute('''
+    CREATE TABLE IF NOT EXISTS users (
+        id INTEGER PRIMARY KEY,
+        name TEXT,
+        email TEXT,
+        created_at TEXT
+    )
+''')
 
-# 方式2: 完整API
-chart = ChartGenerator()
-chart.line_chart(data, '月份', ['销售额', '利润'], title='月度业绩')
-chart.save('sales.png')
+# 插入数据
+db.insert('users', {
+    'name': '张三',
+    'email': 'zhangsan@example.com',
+    'created_at': '2026-01-01'
+})
+
+# 查询
+users = db.execute('SELECT * FROM users LIMIT 10')
+for user in users:
+    print(user)
+
+db.close()
+```
+
+### MySQL 使用
+
+```python
+from database_ops import MySQLConnection
+
+# 连接MySQL
+db = MySQLConnection(
+    host='localhost',
+    port=3306,
+    user='root',
+    password='password',
+    database='myapp'
+)
+
+# 使用同上...
+db.close()
 ```
 
 ## 📚 详细示例
 
-### 折线图 - 趋势分析
+### 条件查询
 
 ```python
-from chart_generator import ChartGenerator
-
-data = {
-    'date': ['2026-01', '2026-02', '2026-03', '2026-04'],
-    'sales': [1000, 1500, 1300, 1800],
-    'profit': [200, 350, 250, 400]
-}
-
-chart = ChartGenerator()
-chart.line_chart(
-    data, 
-    x='date', 
-    y=['sales', 'profit'],  # 多条线
-    title='2026年销售趋势',
-    xlabel='月份',
-    ylabel='金额(元)'
+# 参数化查询 (防SQL注入)
+results = db.execute(
+    'SELECT * FROM users WHERE age > ? AND city = ?',
+    (25, '北京')
 )
-chart.save('trend.png')
+
+# 获取单条
+user = db.fetch_one(
+    'SELECT * FROM users WHERE id = ?',
+    (1,)
+)
+
+# 获取单个值
+count = db.fetch_value('SELECT COUNT(*) FROM users')
 ```
 
-### 柱状图 - 类别对比
+### 批量插入
 
 ```python
-data = {
-    'product': ['产品A', '产品B', '产品C', '产品D'],
-    'sales': [1500, 2300, 1800, 2100],
-    'target': [2000, 2000, 2000, 2000]
-}
+# 批量插入大量数据
+users = [
+    {'name': '用户1', 'email': 'u1@test.com'},
+    {'name': '用户2', 'email': 'u2@test.com'},
+    {'name': '用户3', 'email': 'u3@test.com'},
+    # ... 更多数据
+]
 
-chart = ChartGenerator()
-chart.bar_chart(
-    data,
-    x='product',
-    y=['sales', 'target'],  # 对比
-    title='产品销售 vs 目标'
-)
-chart.save('bar.png')
+db.insert_many('users', users)
+print(f"插入 {len(users)} 条记录")
 ```
 
-### 饼图 - 占比分析
+### 事务处理
 
 ```python
-data = {
-    'category': ['手机', '电脑', '平板', '配件'],
-    'revenue': [35, 30, 20, 15]  # 百分比
-}
-
-chart = ChartGenerator()
-chart.pie_chart(
-    data,
-    names='category',
-    values='revenue',
-    title='收入占比'
-)
-chart.save('pie.png')
+try:
+    db.begin()  # 开始事务
+    
+    db.insert('orders', {'user_id': 1, 'amount': 100})
+    db.insert('orders', {'user_id': 1, 'amount': 200})
+    # 如果这里出错
+    
+    db.commit()  # 提交
+    print("订单创建成功!")
+except:
+    db.rollback()  # 回滚
+    print("订单创建失败,已回滚")
 ```
 
-### 散点图 - 相关性分析
+### 数据统计
 
 ```python
-data = {
-    'advertising': [100, 200, 300, 400, 500],
-    'sales': [1200, 1800, 2400, 2900, 3800],
-    'profit': [300, 500, 700, 800, 1100]
-}
+# 统计表行数
+count = db.count('users')
+print(f"用户总数: {count}")
 
-chart = ChartGenerator()
-chart.scatter_chart(
-    data,
-    x='advertising',
-    y='sales',
-    size='profit',  # 气泡大小
-    title='广告投入 vs 销售额'
-)
-chart.save('scatter.png')
+# 表统计信息
+stats = db.stats('orders')
+print(stats)
+# {'table': 'orders', 'columns': 5, 'rows': 1000, 'structure': [...]}
 ```
 
-### Plotly 交互式图表
+### 备份和恢复
 
 ```python
-import pandas as pd
-from chart_generator import PlotlyChart
+# 备份数据库
+backup_path = db.backup('backup_20260101.db')
+print(f"备份完成: {backup_path}")
 
-df = pd.DataFrame(data)
+# 备份到JSON
+from database_ops import export_to_json
 
-# 交互式折线图
-fig = PlotlyChart.line(df, 'date', 'sales', title='交互式折线图')
-html = PlotlyChart.to_html(fig)
+export_to_json('myapp.db', 'users', 'users.json')
+```
 
-# 保存为HTML
-PlotlyChart.save(fig, 'interactive.html')
+### 从JSON导入
 
-# 保存为PNG
-PlotlyChart.save(fig, 'chart.png', format='png')
+```python
+from database_ops import import_from_json
+
+# 导入JSON数据到表
+count = import_from_json('myapp.db', 'users', 'new_users.json')
+print(f"导入了 {count} 条记录")
 ```
 
 ## 📋 API 参考
 
-### ChartGenerator (静态图表)
+### 连接
 
 ```python
-chart = ChartGenerator()
-
-# 图表类型
-chart.line_chart(data, x, y)        # 折线图
-chart.bar_chart(data, x, y)         # 柱状图
-chart.pie_chart(data, names, values) # 饼图
-chart.scatter_chart(data, x, y)     # 散点图
-
-# 保存
-chart.save('output.png', dpi=300)
-chart.to_base64()  # Base64编码
+db = DatabaseOps('file.db')  # SQLite
+db = MySQLConnection(host, port, user, password, database)  # MySQL
+db.connect()   # 连接
+db.close()     # 关闭
 ```
 
-### PlotlyChart (交互式)
+### 查询
 
 ```python
-# 创建
-fig = PlotlyChart.line(df, x, y)
-fig = PlotlyChart.bar(df, x, y)
-fig = PlotlyChart.scatter(df, x, y, color=category)
-fig = PlotlyChart.pie(df, names, values)
-
-# 导出
-html = PlotlyChart.to_html(fig)
-PlotlyChart.save(fig, 'output.html')
-PlotlyChart.save(fig, 'output.png')
+results = db.execute(sql, params)    # 执行SQL
+results = db.query(sql, params)      # 查询别名
+row = db.fetch_one(sql, params)      # 单条
+value = db.fetch_value(sql, params)  # 单个值
 ```
 
-## 🎨 样式选项
+### 写入
 
 ```python
-chart.line_chart(
-    data, 'x', 'y',
-    title='标题',
-    xlabel='X轴标签',
-    ylabel='Y轴标签',
-    figsize=(12, 6),  # 图形大小
-    color='#FF5733'   # 颜色
-)
+id = db.insert(table, data)          # 插入单条
+count = db.insert_many(table, rows)  # 批量插入
+count = db.update(table, data, where, params)  # 更新
+count = db.delete(table, where, params)        # 删除
 ```
 
-## 📊 图表选择指南
+### 表结构
 
-| 数据类型 | 推荐图表 |
-|----------|----------|
-| 随时间变化 | 折线图 |
-| 类别比较 | 柱状图 |
-| 部分占比 | 饼图 |
-| 两变量关系 | 散点图 |
-| 多维数据 | 气泡图 |
-
-## 🔧 常见问题
-
-### 中文显示乱码?
 ```python
-# 设置中文字体
-from chart_generator import setup_chinese_font
-setup_chinese_font()
+tables = db.get_tables()           # 所有表
+columns = db.get_columns('users')  # 列名
+info = db.get_table_info('users')  # 表结构
 ```
 
-### 如何调整图形大小?
+### 事务
+
 ```python
-chart.line_chart(data, x, y, figsize=(14, 8))
+db.begin()      # 开始
+db.commit()     # 提交
+db.rollback()   # 回滚
 ```
 
-### 如何只显示部分数据?
+## 🔧 快速函数
+
 ```python
-# 筛选数据
-data = {k: v[:10] for k, v in data.items()}
+# 无需创建对象
+from database_ops import sqlite_query, sqlite_execute, sqlite_backup
+
+# 查询
+results = sqlite_query('app.db', 'SELECT * FROM users LIMIT 10')
+
+# 执行
+sqlite_execute('app.db', 'DELETE FROM users WHERE old = 1')
+
+# 备份
+backup_path = sqlite_backup('app.db', 'backup.db')
 ```
+
+## ⚠️ 注意事项
+
+1. **写操作前备份** - 重要数据先备份
+2. **使用参数化查询** - 防止SQL注入
+3. **大数据事务** - 批量操作使用事务保证一致性
+4. **连接管理** - 操作完后及时关闭
 
 ## 📄 许可证
 
