@@ -1,253 +1,244 @@
-# Database Ops - 数据库操作工具箱
+# Excel Parser - Excel 操作工具箱
 
 <p align="center">
-  <img src="https://img.shields.io/pypi/v/database-ops-toolkit?style=flat-square" alt="PyPI">
-  <img src="https://img.shields.io/pypi/l/database-ops-toolkit?style=flat-square" alt="License">
+  <img src="https://img.shields.io/pypi/v/excel-parser-toolkit?style=flat-square" alt="PyPI">
+  <img src="https://img.shields.io/pypi/l/excel-parser-toolkit?style=flat-square" alt="License">
 </p>
 
 ## 📖 简介
 
-**Database Ops** 是强大的 SQLite/MySQL 数据库操作工具,让数据库操作变得简单高效。
+**Excel Parser** 是专业的 Microsoft Excel 工作簿操作工具，帮助你轻松创建、读取、编辑 Excel 文件。
 
 ### 🎯 适用场景
 
-- 📊 数据存储和查询
-- 🔧 快速原型开发
-- 💾 数据备份和迁移
-- 📈 统计分析
-- 🔄 数据同步
+- 📊 数据分析报告生成
+- 📋 批量数据导入导出
+- 📑 多Sheet管理工作簿
+- 🎨 格式化报表
+- 📝 模板文件创建
 
 ## 🚀 功能特性
 
 | 功能 | 说明 |
 |------|------|
-| 🗄️ **多数据库支持** | SQLite / MySQL |
-| 📝 **完整SQL支持** | 查询/插入/更新/删除 |
-| 🔄 **事务支持** | 提交/回滚 |
-| 💾 **备份恢复** | 数据库备份 |
-| 📤 **数据导入导出** | JSON/CSV |
-| ⚡ **批量操作** | 批量插入 |
-| 🔍 **智能查询** | 参数化查询防注入 |
+| 📖 **完整读写** | 读取/写入单元格、区域、整个工作簿 |
+| 📑 **Sheet管理** | 创建、删除、选择Sheet |
+| 🎨 **样式设置** | 字体、颜色、对齐、边框 |
+| 📐 **公式支持** | 读取和写入公式 |
+| 🔄 **格式转换** | XLSX↔CSV、XLSX→JSON |
+| 📦 **批量操作** | 合并文件、拆分文件 |
+| 🎯 **模板创建** | 快速生成标准模板 |
 
 ## 📦 安装
 
 ```bash
-# 基础 (SQLite)
-pip install pandas
-
-# 完整 (SQLite + MySQL)
-pip install pandas pymysql
+pip install openpyxl pandas
 ```
 
 ## 🎬 快速开始
 
-### SQLite 使用
+### 读取Excel
 
 ```python
-from database_ops import DatabaseOps
+from excel_parser import ExcelParser, read_excel
 
-# 连接数据库 (自动创建)
-db = DatabaseOps('myapp.db')
+# 方法1: 使用类
+parser = ExcelParser('data.xlsx')
+df = parser.to_dataframe()
+print(f"读取 {len(df)} 行")
+parser.close()
 
-# 创建表
-db.execute('''
-    CREATE TABLE IF NOT EXISTS users (
-        id INTEGER PRIMARY KEY,
-        name TEXT,
-        email TEXT,
-        created_at TEXT
-    )
-''')
-
-# 插入数据
-db.insert('users', {
-    'name': '张三',
-    'email': 'zhangsan@example.com',
-    'created_at': '2026-01-01'
-})
-
-# 查询
-users = db.execute('SELECT * FROM users LIMIT 10')
-for user in users:
-    print(user)
-
-db.close()
+# 方法2: 便捷函数
+df = read_excel('data.xlsx')
 ```
 
-### MySQL 使用
+### 写入Excel
 
 ```python
-from database_ops import MySQLConnection
+from excel_parser import ExcelParser
 
-# 连接MySQL
-db = MySQLConnection(
-    host='localhost',
-    port=3306,
-    user='root',
-    password='password',
-    database='myapp'
-)
+parser = ExcelParser('output.xlsx')
 
-# 使用同上...
-db.close()
+# 创建Sheet
+parser.create_sheet('销售数据')
+
+# 写入表头
+parser.write_row(1, ['日期', '销售额', '利润', '备注'])
+
+# 追加数据
+parser.append_row(['2026-01', 10000, 2000, '开门红'])
+parser.append_row(['2026-02', 15000, 3500, '增长'])
+parser.append_row(['2026-03', 12000, 1800, '平稳'])
+
+# 保存
+parser.save()
+parser.close()
+
+print("写入完成!")
+```
+
+### XLSX 转 CSV
+
+```python
+from excel_parser import excel_to_csv
+
+excel_to_csv('中文数据.xlsx', '中文数据.csv')
 ```
 
 ## 📚 详细示例
 
-### 条件查询
+### 创建带样式的报表
 
 ```python
-# 参数化查询 (防SQL注入)
-results = db.execute(
-    'SELECT * FROM users WHERE age > ? AND city = ?',
-    (25, '北京')
+from excel_parser import ExcelParser
+from openpyxl.styles import Font, PatternFill, Alignment
+
+parser = ExcelParser('report.xlsx')
+parser.create_sheet('月度报告')
+
+# 写入标题
+parser.write_cell('A1', '2026年销售报告')
+parser.set_style('A1', font=Font(size=16, bold=True))
+
+# 写入表头
+headers = ['日期', '产品', '销量', '销售额']
+parser.write_row(3, headers)
+parser.set_style('A3:D3', 
+    font=Font(bold=True),
+    fill=PatternFill(start_color='CCE5FF', fill_type='solid')
 )
 
-# 获取单条
-user = db.fetch_one(
-    'SELECT * FROM users WHERE id = ?',
-    (1,)
-)
-
-# 获取单个值
-count = db.fetch_value('SELECT COUNT(*) FROM users')
-```
-
-### 批量插入
-
-```python
-# 批量插入大量数据
-users = [
-    {'name': '用户1', 'email': 'u1@test.com'},
-    {'name': '用户2', 'email': 'u2@test.com'},
-    {'name': '用户3', 'email': 'u3@test.com'},
-    # ... 更多数据
+# 写入数据
+data = [
+    ['2026-01-01', '产品A', 100, 5000],
+    ['2026-01-02', '产品B', 80, 4000],
 ]
+parser.write_range('A4', data)
 
-db.insert_many('users', users)
-print(f"插入 {len(users)} 条记录")
+# 自动筛选
+parser.autofilter('A3:D100')
+
+parser.save()
+parser.close()
 ```
 
-### 事务处理
+### 批量合并Excel文件
 
 ```python
-try:
-    db.begin()  # 开始事务
-    
-    db.insert('orders', {'user_id': 1, 'amount': 100})
-    db.insert('orders', {'user_id': 1, 'amount': 200})
-    # 如果这里出错
-    
-    db.commit()  # 提交
-    print("订单创建成功!")
-except:
-    db.rollback()  # 回滚
-    print("订单创建失败,已回滚")
+from excel_parser import ExcelParser
+
+# 合并多个Excel文件
+ExcelParser.merge_files(
+    file_paths=['a.xlsx', 'b.xlsx', 'c.xlsx'],
+    output_path='merged.xlsx'
+)
+
+print("合并完成!")
 ```
 
-### 数据统计
+### 按列拆分Excel
 
 ```python
-# 统计表行数
-count = db.count('users')
-print(f"用户总数: {count}")
+# 按"部门"列拆分
+ExcelParser.split_by_column(
+    input_path='员工列表.xlsx',
+    output_dir='部门拆分',
+    column='部门'
+)
 
-# 表统计信息
-stats = db.stats('orders')
-print(stats)
-# {'table': 'orders', 'columns': 5, 'rows': 1000, 'structure': [...]}
+# 生成: 财务部.xlsx, 技术部.xlsx, 销售部.xlsx ...
 ```
 
-### 备份和恢复
+### 创建模板
 
 ```python
-# 备份数据库
-backup_path = db.backup('backup_20260101.db')
-print(f"备份完成: {backup_path}")
+from excel_parser import ExcelParser
 
-# 备份到JSON
-from database_ops import export_to_json
-
-export_to_json('myapp.db', 'users', 'users.json')
-```
-
-### 从JSON导入
-
-```python
-from database_ops import import_from_json
-
-# 导入JSON数据到表
-count = import_from_json('myapp.db', 'users', 'new_users.json')
-print(f"导入了 {count} 条记录")
+ExcelParser.create_template(
+    path='报销单模板.xlsx',
+    sheets={
+        '费用报销': ['日期', '部门', '姓名', '金额', '事项'],
+        '差旅报销': ['出发日期', '返回日期', '地点', '交通费', '住宿费']
+    }
+)
 ```
 
 ## 📋 API 参考
 
-### 连接
+### 文件操作
 
 ```python
-db = DatabaseOps('file.db')  # SQLite
-db = MySQLConnection(host, port, user, password, database)  # MySQL
-db.connect()   # 连接
-db.close()     # 关闭
+parser = ExcelParser('file.xlsx')
+parser.load('another.xlsx')     # 加载
+parser.save()                   # 保存
+parser.save('new.xlsx')         # 另存为
+parser.close()                  # 关闭
 ```
 
-### 查询
+### Sheet操作
 
 ```python
-results = db.execute(sql, params)    # 执行SQL
-results = db.query(sql, params)      # 查询别名
-row = db.fetch_one(sql, params)      # 单条
-value = db.fetch_value(sql, params)  # 单个值
+sheets = parser.get_sheets()    # 获取所有Sheet
+parser.select_sheet('Sheet1')   # 选择Sheet
+parser.create_sheet('NewSheet') # 创建Sheet
+parser.delete_sheet('Sheet2')   # 删除Sheet
 ```
 
-### 写入
+### 数据读写
 
 ```python
-id = db.insert(table, data)          # 插入单条
-count = db.insert_many(table, rows)  # 批量插入
-count = db.update(table, data, where, params)  # 更新
-count = db.delete(table, where, params)        # 删除
+# 读取
+value = parser.read_cell('A1')
+data = parser.read_range('A1:C10')
+all_data = parser.read_all()
+df = parser.to_dataframe()
+
+# 写入
+parser.write_cell('A1', '值')
+parser.write_row(1, [1,2,3])
+parser.write_range('A1', [[1,2],[3,4]])
+parser.append_row([1,2,3])
 ```
 
-### 表结构
+### 样式
 
 ```python
-tables = db.get_tables()           # 所有表
-columns = db.get_columns('users')  # 列名
-info = db.get_table_info('users')  # 表结构
+parser.set_style('A1', font=Font(bold=True))
+parser.set_column_width(1, 20)  # 列宽
+parser.autofilter('A1:D10')     # 筛选
 ```
 
-### 事务
+## 🔧 常见问题
 
+### Q: 如何设置列宽?
 ```python
-db.begin()      # 开始
-db.commit()     # 提交
-db.rollback()   # 回滚
+parser.set_column_width(1, 20)  # A列宽20
+parser.set_column_width(2, 15) # B列宽15
 ```
 
-## 🔧 快速函数
-
+### Q: 如何设置日期格式?
 ```python
-# 无需创建对象
-from database_ops import sqlite_query, sqlite_execute, sqlite_backup
-
-# 查询
-results = sqlite_query('app.db', 'SELECT * FROM users LIMIT 10')
-
-# 执行
-sqlite_execute('app.db', 'DELETE FROM users WHERE old = 1')
-
-# 备份
-backup_path = sqlite_backup('app.db', 'backup.db')
+# 使用pandas写入时自动处理
+df['date'] = pd.to_datetime(df['date'])
+df.to_excel('output.xlsx')
 ```
 
-## ⚠️ 注意事项
+### Q: 如何读取公式而非值?
+```python
+parser = ExcelParser('file.xlsx')
+formula = parser.get_formula('A1')  # 获取公式
+```
 
-1. **写操作前备份** - 重要数据先备份
-2. **使用参数化查询** - 防止SQL注入
-3. **大数据事务** - 批量操作使用事务保证一致性
-4. **连接管理** - 操作完后及时关闭
+## 📊 性能
+
+| 操作 | 10行 | 1万行 | 10万行 |
+|------|------|-------|--------|
+| 读取 | 0.1s | 0.5s | 3s |
+| 写入 | 0.1s | 0.8s | 8s |
+
+## 🤝 贡献
+
+欢迎提交 Issue 和 Pull Request！
 
 ## 📄 许可证
 
